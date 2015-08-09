@@ -174,11 +174,10 @@ public class DetailActivityFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String filmDetail) {
-            String text;
-            if(filmDetail.equals("null")){
-                text = "Not Available";
-            }else{
-                text = String.format(getResources().getString(R.string.film_runtime), filmDetail);
+            String text = "Not Available";
+            if(filmDetail != null){
+                text = filmDetail.equals("null") ? "Not Available"
+                        : String.format(getResources().getString(R.string.film_runtime), filmDetail);
             }
             TextView textView = (TextView) getActivity().findViewById(R.id.runtime_text);
             textView.setText(text);

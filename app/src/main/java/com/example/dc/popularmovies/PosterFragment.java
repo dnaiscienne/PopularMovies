@@ -1,7 +1,10 @@
 package com.example.dc.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,8 +47,12 @@ public class PosterFragment extends Fragment {
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = pref.getString("order", "");
-        FetchFilmsTask filmsTask = new FetchFilmsTask();
-        filmsTask.execute(sortOrder);
+        if(isNetworkAvailable()) {
+            FetchFilmsTask filmsTask = new FetchFilmsTask();
+            filmsTask.execute(sortOrder);
+        }else{
+            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -52,7 +60,12 @@ public class PosterFragment extends Fragment {
         super.onStart();
         loadFilms();
     }
-
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -129,7 +142,7 @@ public class PosterFragment extends Fragment {
 
                 filmsJsonStr = buffer.toString();
                 Log.v("FilmJSON", filmsJsonStr);
-            }catch(Exception e){
+            }catch(IOException e){
                 Log.e(LOG_TAG, "Error", e);
 
                 return null;
