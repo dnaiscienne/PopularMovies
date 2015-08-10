@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -38,15 +39,28 @@ import java.util.List;
 public class PosterFragment extends Fragment {
 
     private PosterAdapter mPosterAdapter;
+    private List<Film> mFilmList;
 
 
     public PosterFragment() {
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null){
+            mFilmList = new ArrayList<Film>();
+        }else{
+            mFilmList = savedInstanceState.getParcelableArrayList("films");
+        }
+
+    }
+
     public void loadFilms(){
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortOrder = pref.getString("order", "");
+        String sortOrder = pref.getString("order", "popularity.desc");
         if(isNetworkAvailable()) {
             FetchFilmsTask filmsTask = new FetchFilmsTask();
             filmsTask.execute(sortOrder);
@@ -71,7 +85,7 @@ public class PosterFragment extends Fragment {
                              Bundle savedInstanceState) {
         mPosterAdapter = new PosterAdapter(
                 getActivity(),
-                new ArrayList<Film>());
+                mFilmList);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_poster);
@@ -87,6 +101,12 @@ public class PosterFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putParcelableArrayList("films",(ArrayList<? extends Parcelable>) mFilmList);
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     public class FetchFilmsTask extends AsyncTask<String, Void, List<Film>>{
@@ -219,9 +239,6 @@ public class PosterFragment extends Fragment {
             if(filmList != null){
                 mPosterAdapter.clear();
                 mPosterAdapter.addAll(filmList);
-//                for (Film film : filmList){
-//                    mPosterAdapter.add(film);
-//                }
             }
 
         }

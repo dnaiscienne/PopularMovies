@@ -1,6 +1,9 @@
 package com.example.dc.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -32,9 +36,10 @@ import java.util.Date;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DetailActivityFragment extends Fragment {
+public class DetailActivityFragment extends Fragment
+    implements  OnTaskCompleted{
 
-    Film film;
+    private Film mFilm;
 
     public DetailActivityFragment() {
     }
@@ -50,21 +55,21 @@ public class DetailActivityFragment extends Fragment {
         if(intent != null && intent.hasExtra("bundle")){
 
             Bundle b = intent.getBundleExtra("bundle");
-            this.film = b.getParcelable("film");
-            ((TextView)rootView.findViewById(R.id.film_title_text)).setText(film.mTitle);
-            ((TextView)rootView.findViewById(R.id.overview_text)).setText(film.mOverview);
-            ((TextView)rootView.findViewById(R.id.rating_text)).setText(film.mVotesAverage);
+            this.mFilm = b.getParcelable("film");
+            ((TextView)rootView.findViewById(R.id.film_title_text)).setText(mFilm.mTitle);
+            ((TextView)rootView.findViewById(R.id.overview_text)).setText(mFilm.mOverview);
+            ((TextView)rootView.findViewById(R.id.rating_text)).setText(mFilm.mVotesAverage);
 
             Picasso.with(getActivity())
-                    .load(film.mImageUrl)
+                    .load(mFilm.mImageUrl)
                     .placeholder(R.drawable.placeholder)
                     .into(((ImageView) rootView.findViewById(R.id.film_poster_thumbnail)));
 
-            Log.v("URL", film.mImageUrl);
-            Log.v("Release Date", film.mReleaseDate);
+            Log.v("URL", mFilm.mImageUrl);
+            Log.v("Release Date", mFilm.mReleaseDate);
 
             try {
-                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(film.mReleaseDate);
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(mFilm.mReleaseDate);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(date);
                 int year = calendar.get(Calendar.YEAR);
@@ -74,17 +79,51 @@ public class DetailActivityFragment extends Fragment {
                 Log.v("Release Year: ", "FAIL");
                 e.printStackTrace();
             }
-            FetchDetailsTask fetchDetailsTask = new FetchDetailsTask();
-            fetchDetailsTask.execute(film.mFilmId);
+            if(isNetworkAvailable()){
+                FetchDetailsTask fetchDetailsTask = new FetchDetailsTask();
+                fetchDetailsTask.execute(mFilm);
+            }else{
+                Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
+            }
         }
         return rootView;
     }
-    public class FetchDetailsTask extends AsyncTask<String, Void, String>{
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState == null){
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        super.onSaveInstanceState(outState);
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    @Override
+    public void onTaskCompleted(Film film) {
+        mFilm = film;
+        View view = getView();
+        TextView textView = (TextView) view.findViewById(R.id.runtime_text);
+        textView.setText(film.mRunTime);
+
+    }
+
+    public class FetchDetailsTask extends AsyncTask<Film, Void, Film>{
 
         private final String LOG_TAG = FetchDetailsTask.class.getSimpleName();
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Film doInBackground(Film... params) {
 
             if(params.length == 0){
                 return null;
@@ -95,13 +134,14 @@ public class DetailActivityFragment extends Fragment {
 
             String filmJsonStr = null;
             final String API_KEY= Constants.API_KEY;
+            Film film = params[0];
 
             try{
                 final String MDB_BASE_URL = "http://api.themoviedb.org/3/movie/";
                 final String API_KEY_PARAM = "api_key";
 
                 Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
-                        .appendPath(params[0])
+                        .appendPath(film.mFilmId)
                         .appendQueryParameter(API_KEY_PARAM, API_KEY)
                         .build();
 
@@ -133,7 +173,7 @@ public class DetailActivityFragment extends Fragment {
 
                 filmJsonStr = buffer.toString();
                 Log.v("Detail JSON", filmJsonStr);
-            }catch (Exception e){
+            }catch (IOException e){
 
                 Log.e(LOG_TAG, "Error", e);
                 return null;
@@ -153,7 +193,7 @@ public class DetailActivityFragment extends Fragment {
             }
 
             try{
-                return getFilmDetailFromJson(filmJsonStr);
+                return getFilmDetailFromJson(film ,filmJsonStr);
             }catch(JSONException e){
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
@@ -162,25 +202,26 @@ public class DetailActivityFragment extends Fragment {
             return null;
         }
 
-        private String getFilmDetailFromJson(String filmJsonStr)
+        private Film getFilmDetailFromJson(Film film, String filmJsonStr)
             throws  JSONException{
 
             final String MDB_RUNTIME = "runtime";
 
             JSONObject filmJson = new JSONObject(filmJsonStr);
-            return filmJson.getString(MDB_RUNTIME);
+            String runtime = filmJson.getString(MDB_RUNTIME);
+            Log.v("Film Runtime", runtime);
+            if (runtime.equals("null"))
+                runtime = "Not Available";
+            film.mRunTime = runtime;
+            return film;
         }
 
 
         @Override
-        protected void onPostExecute(String filmDetail) {
-            String text = "Not Available";
-            if(filmDetail != null){
-                text = filmDetail.equals("null") ? "Not Available"
-                        : String.format(getResources().getString(R.string.film_runtime), filmDetail);
+        protected void onPostExecute(Film film){
+            if (film != null){
+                onTaskCompleted(film);
             }
-            TextView textView = (TextView) getActivity().findViewById(R.id.runtime_text);
-            textView.setText(text);
         }
     }
 }
