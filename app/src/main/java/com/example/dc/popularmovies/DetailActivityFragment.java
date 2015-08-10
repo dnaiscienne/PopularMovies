@@ -52,10 +52,11 @@ public class DetailActivityFragment extends Fragment
         Intent intent = getActivity().getIntent();
 
 
-        if(intent != null && intent.hasExtra("bundle")){
-
+        if(intent != null && intent.hasExtra("bundle")) {
             Bundle b = intent.getBundleExtra("bundle");
             this.mFilm = b.getParcelable("film");
+        }
+        if(mFilm != null){
             ((TextView)rootView.findViewById(R.id.film_title_text)).setText(mFilm.mTitle);
             ((TextView)rootView.findViewById(R.id.overview_text)).setText(mFilm.mOverview);
             ((TextView)rootView.findViewById(R.id.rating_text)).setText(mFilm.mVotesAverage);
@@ -79,28 +80,37 @@ public class DetailActivityFragment extends Fragment
                 Log.v("Release Year: ", "FAIL");
                 e.printStackTrace();
             }
-            if(isNetworkAvailable()){
-                FetchDetailsTask fetchDetailsTask = new FetchDetailsTask();
-                fetchDetailsTask.execute(mFilm);
+            if(mFilm.mRunTime == null){
+                loadExtraDetails();
             }else{
-                Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
+                ((TextView)rootView.findViewById(R.id.runtime_text)).setText(mFilm.mRunTime);
             }
         }
         return rootView;
     }
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if(savedInstanceState == null){
+    private void loadExtraDetails(){
+        if(isNetworkAvailable()){
+            FetchDetailsTask fetchDetailsTask = new FetchDetailsTask(this);
+            fetchDetailsTask.execute(mFilm);
+        }else{
+            mFilm.mRunTime = "Not Available";
+            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState != null){
+            mFilm = savedInstanceState.getParcelable("film");
+        }
+    }
 
-        super.onSaveInstanceState(outState);
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putParcelable("film", mFilm);
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     private boolean isNetworkAvailable() {
@@ -121,6 +131,11 @@ public class DetailActivityFragment extends Fragment
     public class FetchDetailsTask extends AsyncTask<Film, Void, Film>{
 
         private final String LOG_TAG = FetchDetailsTask.class.getSimpleName();
+        private OnTaskCompleted listener;
+
+        public FetchDetailsTask(OnTaskCompleted listener){
+            this.listener = listener;
+        }
 
         @Override
         protected Film doInBackground(Film... params) {
@@ -220,7 +235,7 @@ public class DetailActivityFragment extends Fragment
         @Override
         protected void onPostExecute(Film film){
             if (film != null){
-                onTaskCompleted(film);
+                listener.onTaskCompleted(film);
             }
         }
     }

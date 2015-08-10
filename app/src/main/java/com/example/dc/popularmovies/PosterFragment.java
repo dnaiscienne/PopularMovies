@@ -40,6 +40,8 @@ public class PosterFragment extends Fragment {
 
     private PosterAdapter mPosterAdapter;
     private List<Film> mFilmList;
+    private String mSortOrder;
+    private String mRecentOrder;
 
 
     public PosterFragment() {
@@ -49,21 +51,22 @@ public class PosterFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState == null){
-            mFilmList = new ArrayList<Film>();
-        }else{
+        if (savedInstanceState != null){
             mFilmList = savedInstanceState.getParcelableArrayList("films");
+            mRecentOrder = savedInstanceState.getString("order");
+        }else{
+            mFilmList = new ArrayList<Film>();
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            mRecentOrder = pref.getString("order", "popularity.desc");
         }
 
     }
 
-    public void loadFilms(){
+    private void loadFilms(){
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortOrder = pref.getString("order", "popularity.desc");
         if(isNetworkAvailable()) {
             FetchFilmsTask filmsTask = new FetchFilmsTask();
-            filmsTask.execute(sortOrder);
+            filmsTask.execute(mSortOrder);
         }else{
             Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
         }
@@ -72,7 +75,11 @@ public class PosterFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        loadFilms();
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSortOrder = pref.getString("order", "popularity.desc");
+        if(mFilmList.isEmpty() || !mSortOrder.equals(mRecentOrder)) {
+            loadFilms();
+        }
     }
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
@@ -106,6 +113,7 @@ public class PosterFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putParcelableArrayList("films",(ArrayList<? extends Parcelable>) mFilmList);
+        savedInstanceState.putString("order", mSortOrder);
         super.onSaveInstanceState(savedInstanceState);
     }
 
