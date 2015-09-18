@@ -1,10 +1,7 @@
 package com.example.dc.popularmovies;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,6 +35,7 @@ import java.util.List;
  */
 public class PosterFragment extends Fragment {
 
+
     private PosterAdapter mPosterAdapter;
     private List<Film> mFilmList;
     private String mSortOrder;
@@ -64,7 +62,7 @@ public class PosterFragment extends Fragment {
 
     private void loadFilms(){
 
-        if(isNetworkAvailable()) {
+        if(Utility.isNetworkAvailable(getActivity())) {
             FetchFilmsTask filmsTask = new FetchFilmsTask();
             filmsTask.execute(mSortOrder);
         }else{
@@ -81,12 +79,7 @@ public class PosterFragment extends Fragment {
             loadFilms();
         }
     }
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -100,11 +93,11 @@ public class PosterFragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                  Film film = mPosterAdapter.getItem(position);
-                  Bundle b = new Bundle();
-                  b.putParcelable("film", film);
-                  Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra("bundle", b);
-                  startActivity(intent);
+                Film film = mPosterAdapter.getItem(position);
+                Bundle b = new Bundle();
+                b.putParcelable("film", film);
+                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra("bundle", b);
+                startActivity(intent);
             }
         });
         return rootView;
@@ -251,7 +244,5 @@ public class PosterFragment extends Fragment {
 
         }
     }
-
-
 
 }

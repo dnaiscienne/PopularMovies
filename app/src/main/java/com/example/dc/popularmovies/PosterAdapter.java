@@ -30,7 +30,7 @@ public class PosterAdapter extends ArrayAdapter<Film> {
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.poster_item, parent, false);
+                    R.layout.grid_item_poster, parent, false);
         }
 
         ImageView imageView = (ImageView) convertView;

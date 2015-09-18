@@ -3,6 +3,8 @@ package com.example.dc.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.List;
+
 /**
  * Created by DS on 8/1/2015.
  */
@@ -15,6 +17,8 @@ public class Film implements Parcelable{
     String mReleaseDate;
     String mImageUrl;
     String mRunTime;
+    List<Trailer> mTrailers;
+    List<Review> mReviews;
 
 
     @Override
@@ -60,4 +64,5 @@ public class Film implements Parcelable{
         this.mReleaseDate = releaseDate;
         this.mImageUrl = imageUrl;
     }
+
 }
