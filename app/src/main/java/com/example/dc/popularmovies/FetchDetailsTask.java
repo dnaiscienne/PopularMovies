@@ -125,8 +125,14 @@ public class FetchDetailsTask extends AsyncTask<Film, Void, Film> {
         final String MDB_TRAILER_NAME = "name";
         final String MDB_TRAILER_SOURCE = "source";
 
+        final String MDB_REVIEWS = "reviews";
+        final String MDB_REVIEWS_RESULTS = "results";
+        final String MDB_REVIEW_ID = "id";
+        final String MDB_REVIEW_AUTHOR = "author";
+        final String MDB_REVIEW_CONTENT = "content";
+
+
         JSONObject filmJson = new JSONObject(filmJsonStr);
-        String runtime = filmJson.getString(MDB_RUNTIME);
         JSONObject filmTrailersJson = filmJson.getJSONObject(MDB_TRAILERS);
         JSONArray youtubeTrailersJson = filmTrailersJson.getJSONArray(MDB_YOUTUBE);
         List<Trailer> trailers = new ArrayList<>();
@@ -136,9 +142,20 @@ public class FetchDetailsTask extends AsyncTask<Film, Void, Film> {
             trailers.add(new Trailer(name, source));
         }
         Log.v("Trailer count", Integer.toString(trailers.size()));
-        if (runtime.equals("null")) runtime = "Runtime Not Available";
-        film.mRunTime = runtime;
         film.mTrailers = trailers;
+
+        JSONObject filmReviewsJson = filmJson.getJSONObject(MDB_REVIEWS);
+        JSONArray filmReviewsResultsJson = filmReviewsJson.getJSONArray(MDB_REVIEWS_RESULTS);
+        List<Review> reviews = new ArrayList<>();
+        for(int i = 0; i < filmReviewsResultsJson.length(); i++){
+            String id = filmReviewsResultsJson.getJSONObject(i).getString(MDB_REVIEW_ID);
+            String author = filmReviewsResultsJson.getJSONObject(i).getString(MDB_REVIEW_AUTHOR);
+            String content = filmReviewsResultsJson.getJSONObject(i).getString(MDB_REVIEW_CONTENT);
+            reviews.add(new Review(id, author, content));
+        }
+        Log.v("Review count", Integer.toString(reviews.size()));
+        film.mReviews = reviews;
+
         return film;
     }
 

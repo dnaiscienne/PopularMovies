@@ -16,7 +16,6 @@ public class Film implements Parcelable{
     String mVotesAverage;
     String mReleaseDate;
     String mImageUrl;
-    String mRunTime;
     List<Trailer> mTrailers;
     List<Review> mReviews;
 
