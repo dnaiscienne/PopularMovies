@@ -52,7 +52,7 @@ public class DetailActivityFragment extends Fragment
     private LinearLayout mTrailersView;
     private LinearLayout mReviewsView;
 
-    private TextView mTrailerItemView;
+//    private TextView mTrailerItemView;
     private TextView mReviewItemView;
 
 //    private ListView mTrailersListView;
@@ -156,22 +156,23 @@ public class DetailActivityFragment extends Fragment
         }
 
         LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mReviewItemView = (TextView) inflater.inflate(R.layout.list_item_review, null,false);
         List trailers = mFilm.mTrailers;
         if (trailers != null && !trailers.isEmpty()){
             mFirstTrailer = createYoutubeUrl(((Trailer)trailers.get(0)).mSource).toString();
             for(final Trailer t : mFilm.mTrailers ){
-                mTrailerItemView = (TextView) inflater.inflate(R.layout.list_item_trailer, null, false);
-                mTrailerItemView.setText(t.mName);
+                View trailerItemView = inflater.inflate(R.layout.list_item_trailer, null, false);
+//                mTrailerItemView = (TextView) inflater.inflate(R.layout.list_item_trailer, null, false);
+                TextView trailerItemNameView = (TextView)trailerItemView.findViewById(R.id.list_item_trailer_name_textview);
+                trailerItemNameView.setText(t.mName);
                 final Uri youtubeUrl = createYoutubeUrl(t.mSource);
-                mTrailerItemView.setOnClickListener(new View.OnClickListener() {
+                trailerItemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 //                        Toast.makeText(getActivity(), t.mName, Toast.LENGTH_SHORT).show();
                         playTrailer(youtubeUrl);
                     }
                 });
-                mTrailersView.addView(mTrailerItemView);
+                mTrailersView.addView(trailerItemView);
             }
             mShareActionProvider.setShareIntent(createShareTrailerIntent());
         }
