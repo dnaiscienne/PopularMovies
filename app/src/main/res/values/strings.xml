@@ -17,4 +17,7 @@
     <string name="pref_sort_popular">popularity.desc</string>
     <string name="pref_sort_label_rating">Highest Rating</string>
     <string name="pref_sort_label_popular">Most Popular</string>
+
+    <string name="pref_sort_label_favorites">Favorites</string>
+    <string name="pref_sort_favorites">favorites</string>
 </resources>

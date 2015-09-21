@@ -1,7 +1,9 @@
 package com.example.dc.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,11 +17,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.dc.popularmovies.data.FilmContract;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -48,6 +52,7 @@ public class DetailActivityFragment extends Fragment
     private TextView mRuntimeView;
     private TextView mReleaseView;
     private ImageView mPosterView;
+    private Button mFavoriteButton;
 
     private LinearLayout mTrailersView;
     private LinearLayout mReviewsView;
@@ -77,6 +82,7 @@ public class DetailActivityFragment extends Fragment
         mRuntimeView = (TextView)rootView.findViewById(R.id.runtime_text);
         mReleaseView = (TextView)rootView.findViewById(R.id.release_year_text);
         mPosterView = (ImageView) rootView.findViewById(R.id.film_poster_thumbnail);
+        mFavoriteButton = (Button) rootView.findViewById(R.id.favorite_button);
 
         mTrailersView = (LinearLayout) rootView.findViewById(R.id.film_trailer_list);
         mReviewsView = (LinearLayout) rootView.findViewById(R.id.film_review_list);
@@ -91,6 +97,41 @@ public class DetailActivityFragment extends Fragment
         }
         if(mFilm != null){
             fetchFilmDetails(mFilm);
+            mFavoriteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getActivity(), "Favorite", Toast.LENGTH_SHORT).show();
+
+
+
+                    ContentValues filmValues = new ContentValues();
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_OVERVIEW, mFilm.mOverview);
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_RATING, mFilm.mVotesAverage);
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_RELEASE, mFilm.mReleaseDate);
+                    filmValues.put(FilmContract.FilmEntry.COLUMN_POSTER_PATH, mFilm.mImageUrl);
+
+                    Uri uri = getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
+
+                    Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
+
+                    //check if in favorite table
+                    Cursor c = getActivity().getContentResolver().query(
+                            filmUri,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
+
+                    if(c.moveToFirst()){
+                        Toast.makeText(getActivity(), mFilm.mFilmId, Toast.LENGTH_SHORT).show();
+                    }
+                    c.close();
+
+                }
+            });
         }
         return rootView;
     }

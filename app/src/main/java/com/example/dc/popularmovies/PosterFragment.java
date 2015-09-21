@@ -2,6 +2,7 @@ package com.example.dc.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
+
+import com.example.dc.popularmovies.data.FilmContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,13 +36,31 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PosterFragment extends Fragment {
+public class PosterFragment extends Fragment{
 
 
     private PosterAdapter mPosterAdapter;
     private List<Film> mFilmList;
     private String mSortOrder;
     private String mRecentOrder;
+
+    private static final String[] FILM_COLUMNS = {
+            FilmContract.FilmEntry._ID,
+            FilmContract.FilmEntry.COLUMN_FILM_ID,
+            FilmContract.FilmEntry.COLUMN_FILM_TITLE,
+            FilmContract.FilmEntry.COLUMN_OVERVIEW,
+            FilmContract.FilmEntry.COLUMN_RATING,
+            FilmContract.FilmEntry.COLUMN_RELEASE,
+            FilmContract.FilmEntry.COLUMN_POSTER_PATH
+    };
+
+    static final int COL_FILM_ID = 0;
+    static final int COL_FILM_IMDB_ID = 1;
+    static final int COL_FILM_TITLE = 2;
+    static final int COL_FILM_OVERVIEW = 3;
+    static final int COL_FILM_RATING = 4;
+    static final int COL_FILM_RELEASE = 5;
+    static final int COL_FILM_POSTER_PATH = 6;
 
 
     public PosterFragment() {
@@ -61,13 +82,44 @@ public class PosterFragment extends Fragment {
     }
 
     private void loadFilms(){
-
-        if(Utility.isNetworkAvailable(getActivity())) {
+        mFilmList.clear();
+        boolean hasNetworkConnection = checkNetwork();
+        if(mSortOrder.equals(R.string.pref_sort_favorites)){
+            Cursor filmCursor = getActivity().getContentResolver().query(
+                    FilmContract.FilmEntry.CONTENT_URI,
+                    FILM_COLUMNS,
+                    null,
+                    null,
+                    null
+            );
+            if(filmCursor != null){
+                while (filmCursor.moveToNext()) {
+                    mFilmList.add(
+                            new Film(
+                                    filmCursor.getString(COL_FILM_IMDB_ID),
+                                    filmCursor.getString(COL_FILM_TITLE),
+                                    filmCursor.getString(COL_FILM_OVERVIEW),
+                                    filmCursor.getString(COL_FILM_RATING),
+                                    filmCursor.getString(COL_FILM_RELEASE),
+                                    filmCursor.getString(COL_FILM_POSTER_PATH)
+                            )
+                    );
+                }
+                filmCursor.close();
+            }
+        }
+        else if(hasNetworkConnection) {
             FetchFilmsTask filmsTask = new FetchFilmsTask();
             filmsTask.execute(mSortOrder);
-        }else{
-            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean checkNetwork(){
+        if(!Utility.isNetworkAvailable(getActivity())){
+            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     @Override
