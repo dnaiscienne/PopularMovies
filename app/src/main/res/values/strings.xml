@@ -10,7 +10,8 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_detail">Details</string>
 
-    <string name="favorite_button_label">Mark as favorite</string>
+    <string name="favorite_mark_button_label">Mark as favorite</string>
+    <string name="favorite_unmark_button_label">Unmark as favorite</string>
 
     <string name="pref_sort_label">Sort by</string>
     <string name="pref_sort_rating">vote_average.desc</string>

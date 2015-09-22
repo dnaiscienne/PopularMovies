@@ -45,6 +45,7 @@ public class DetailActivityFragment extends Fragment
 
     private Film mFilm;
     private String mFirstTrailer;
+    private boolean mIsFavorite;
 
     private TextView mTitleView;
     private TextView mOverviewView;
@@ -96,39 +97,61 @@ public class DetailActivityFragment extends Fragment
             this.mFilm = b.getParcelable("film");
         }
         if(mFilm != null){
+            //Fetch additional details
             fetchFilmDetails(mFilm);
+            checkIfFavorite();
+
+            if(mIsFavorite){
+                mFavoriteButton.setText(R.string.favorite_unmark_button_label);
+            }
+
+            //Mark as favorite
             mFavoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Toast.makeText(getActivity(), "Favorite", Toast.LENGTH_SHORT).show();
 
-
-
-                    ContentValues filmValues = new ContentValues();
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_OVERVIEW, mFilm.mOverview);
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_RATING, mFilm.mVotesAverage);
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_RELEASE, mFilm.mReleaseDate);
-                    filmValues.put(FilmContract.FilmEntry.COLUMN_POSTER_PATH, mFilm.mImageUrl);
-
-                    Uri uri = getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
-
-                    Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
-
-                    //check if in favorite table
-                    Cursor c = getActivity().getContentResolver().query(
-                            filmUri,
-                            null,
-                            null,
-                            null,
-                            null
-                    );
-
-                    if(c.moveToFirst()){
-                        Toast.makeText(getActivity(), mFilm.mFilmId, Toast.LENGTH_SHORT).show();
+                    if(mIsFavorite){
+                        removeFromFavorites();
+                        mFavoriteButton.setText(R.string.favorite_mark_button_label);
                     }
-                    c.close();
+                    else{
+                        insertIntoFavorites();
+                        mFavoriteButton.setText(R.string.favorite_unmark_button_label);
+                    }
+
+
+
+
+
+
+
+//                    ContentValues filmValues = new ContentValues();
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_OVERVIEW, mFilm.mOverview);
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_RATING, mFilm.mVotesAverage);
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_RELEASE, mFilm.mReleaseDate);
+//                    filmValues.put(FilmContract.FilmEntry.COLUMN_POSTER_PATH, mFilm.mImageUrl);
+//
+//                    Uri uri = getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
+//
+//                    Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
+//
+//                    //check if in favorite table
+//                    Cursor c = getActivity().getContentResolver().query(
+//                            filmUri,
+//                            null,
+//                            null,
+//                            null,
+//                            null
+//                    );
+//
+//                    if(c.moveToFirst()){
+//                        Toast.makeText(getActivity(), mFilm.mFilmId, Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                    c.close();
 
                 }
             });
@@ -141,6 +164,7 @@ public class DetailActivityFragment extends Fragment
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null){
             mFilm = savedInstanceState.getParcelable("film");
+            checkIfFavorite();
         }
     }
 
@@ -268,5 +292,34 @@ public class DetailActivityFragment extends Fragment
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, mFirstTrailer);
         return shareIntent;
+    }
+
+    private void checkIfFavorite(){
+        Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
+
+        //check if in favorites table
+        Cursor c = getActivity().getContentResolver().query(
+                filmUri,
+                null,
+                null,
+                null,
+                null
+        );
+        mIsFavorite = c.moveToFirst();
+        c.close();
+    }
+    private void insertIntoFavorites(){
+        ContentValues filmValues = new ContentValues();
+        filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
+        filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
+        filmValues.put(FilmContract.FilmEntry.COLUMN_OVERVIEW, mFilm.mOverview);
+        filmValues.put(FilmContract.FilmEntry.COLUMN_RATING, mFilm.mVotesAverage);
+        filmValues.put(FilmContract.FilmEntry.COLUMN_RELEASE, mFilm.mReleaseDate);
+        filmValues.put(FilmContract.FilmEntry.COLUMN_POSTER_PATH, mFilm.mImageUrl);
+
+        getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
+    }
+    private void removeFromFavorites(){
+        int rowsDeleted = 0;
     }
 }
