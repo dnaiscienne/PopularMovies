@@ -69,7 +69,7 @@ public class PosterFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.v("saved instance state", Boolean.toString((savedInstanceState != null)));
         if (savedInstanceState != null){
             mFilmList = savedInstanceState.getParcelableArrayList("films");
             mRecentOrder = savedInstanceState.getString("order");
@@ -84,7 +84,8 @@ public class PosterFragment extends Fragment{
     private void loadFilms(){
         mFilmList.clear();
         boolean hasNetworkConnection = checkNetwork();
-        if(mSortOrder.equals(R.string.pref_sort_favorites)){
+        Log.v("loadFilms", mSortOrder + " " + getString(R.string.pref_sort_favorites));
+        if(mSortOrder.equals(getString(R.string.pref_sort_favorites))){
             Cursor filmCursor = getActivity().getContentResolver().query(
                     FilmContract.FilmEntry.CONTENT_URI,
                     FILM_COLUMNS,
@@ -92,20 +93,31 @@ public class PosterFragment extends Fragment{
                     null,
                     null
             );
+
             if(filmCursor != null){
+                Log.v("Cursor", filmCursor.toString());
+                List<Film> filmList = new ArrayList<Film>();
                 while (filmCursor.moveToNext()) {
-                    mFilmList.add(
-                            new Film(
+
+                    Log.v("Film", Boolean.toString(filmList.add(new Film(
                                     filmCursor.getString(COL_FILM_IMDB_ID),
                                     filmCursor.getString(COL_FILM_TITLE),
                                     filmCursor.getString(COL_FILM_OVERVIEW),
                                     filmCursor.getString(COL_FILM_RATING),
                                     filmCursor.getString(COL_FILM_RELEASE),
                                     filmCursor.getString(COL_FILM_POSTER_PATH)
-                            )
-                    );
+                            ))));
+                    Log.v("Filmlist Size while", Integer.toString(mFilmList.size()));
+
                 }
                 filmCursor.close();
+                mPosterAdapter.clear();
+                Log.v("Filmlist Size", Integer.toString(filmList.size()));
+                mPosterAdapter.addAll(filmList);
+                Log.v("PosterAdapter", mPosterAdapter.toString());
+            }
+            else{
+                Toast.makeText(getActivity(), getString(R.string.no_favorites), Toast.LENGTH_SHORT).show();
             }
         }
         else if(hasNetworkConnection) {
@@ -116,7 +128,7 @@ public class PosterFragment extends Fragment{
 
     private boolean checkNetwork(){
         if(!Utility.isNetworkAvailable(getActivity())){
-            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), getString(R.string.no_network), Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
@@ -127,8 +139,11 @@ public class PosterFragment extends Fragment{
         super.onStart();
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mSortOrder = pref.getString("order", "popularity.desc");
+        Log.v("sort order", Boolean.toString(mSortOrder.equals(mRecentOrder)));
+        Log.v("sort order value - r-s", mRecentOrder + " " + mSortOrder);
         if(mFilmList.isEmpty() || !mSortOrder.equals(mRecentOrder)) {
             loadFilms();
+            mRecentOrder = mSortOrder;
         }
     }
 

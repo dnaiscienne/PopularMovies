@@ -21,4 +21,7 @@
 
     <string name="pref_sort_label_favorites">Favorites</string>
     <string name="pref_sort_favorites">favorites</string>
+
+    <string name="no_network">No Network Connection Available</string>
+    <string name="no_favorites">No Favorite Movies in Collection</string>
 </resources>

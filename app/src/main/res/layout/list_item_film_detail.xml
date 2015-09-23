@@ -79,7 +79,7 @@
             <Button
                 style="@style/ButtonStyle"
                 android:layout_width="96dp"
-                android:text="@string/favorite_button_label" />
+                android:text="@string/favorite_mark_button_label" />
         </LinearLayout>
 
         <TextView

@@ -120,12 +120,6 @@ public class DetailActivityFragment extends Fragment
                         mFavoriteButton.setText(R.string.favorite_unmark_button_label);
                     }
 
-
-
-
-
-
-
 //                    ContentValues filmValues = new ContentValues();
 //                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
 //                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
@@ -321,5 +315,12 @@ public class DetailActivityFragment extends Fragment
     }
     private void removeFromFavorites(){
         int rowsDeleted = 0;
+        String selectionClause = FilmContract.FilmEntry.COLUMN_FILM_ID + " = ?";
+        String[] selectionArgs = {mFilm.mFilmId};
+        rowsDeleted = getActivity().getContentResolver().delete(
+                FilmContract.FilmEntry.CONTENT_URI,
+                selectionClause,
+                selectionArgs
+        );
     }
 }
