@@ -188,6 +188,76 @@ public class DetailActivityFragment extends Fragment
     @Override
     public void onFetchDetailsTaskCompleted(Film film) {
         mFilm = film;
+        showFilmDetails();
+//        mTitleView.setText(mFilm.mTitle);
+//        mOverviewView.setText(mFilm.mOverview);
+//        mRatingView.setText(mFilm.mVotesAverage);
+//
+//        Picasso.with(getActivity())
+//                .load(mFilm.mImageUrl)
+//                .placeholder(R.drawable.placeholder)
+//                .into(mPosterView);
+//
+//        Log.v("URL", mFilm.mImageUrl);
+//        Log.v("Release Date", mFilm.mReleaseDate);
+//
+//
+//
+//        try {
+//            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(mFilm.mReleaseDate);
+//            Calendar calendar = Calendar.getInstance();
+//            calendar.setTime(date);
+//            int year = calendar.get(Calendar.YEAR);
+//            mReleaseView.setText(Integer.toString(year));
+//            Log.v("Release Year: ", Integer.toString(year));
+//        } catch (ParseException e) {
+//            Log.v("Release Year: ", "FAIL");
+//            e.printStackTrace();
+//        }
+
+        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        showTrailers(inflater);
+//        List trailers = mFilm.mTrailers;
+//        if (trailers != null && !trailers.isEmpty()){
+//            mFirstTrailer = createYoutubeUrl(((Trailer)trailers.get(0)).mSource).toString();
+//            for(final Trailer t : mFilm.mTrailers ){
+//                View trailerItemView = inflater.inflate(R.layout.list_item_trailer, null, false);
+////                mTrailerItemView = (TextView) inflater.inflate(R.layout.list_item_trailer, null, false);
+//                TextView trailerItemNameView = (TextView)trailerItemView.findViewById(R.id.list_item_trailer_name_textview);
+//                trailerItemNameView.setText(t.mName);
+//                final Uri youtubeUrl = createYoutubeUrl(t.mSource);
+//                trailerItemView.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+////                        Toast.makeText(getActivity(), t.mName, Toast.LENGTH_SHORT).show();
+//                        playTrailer(youtubeUrl);
+//                    }
+//                });
+//                mTrailersView.addView(trailerItemView);
+//            }
+//            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+//        }
+        showReviews(inflater);
+//        List reviews = mFilm.mReviews;
+//        if (reviews != null && !reviews.isEmpty()){
+//            for(Review r : mFilm.mReviews ){
+//                mReviewItemView = (TextView) inflater.inflate(R.layout.list_item_review, null, false);
+//                mReviewItemView.setText(r.mContent);
+//                mReviewsView.addView(mReviewItemView);
+//            }
+//        }
+
+
+//        mTrailerAdapter = new TrailerAdapter(getActivity(),mFilm.mTrailers);
+//        mTrailersListView.setAdapter(mTrailerAdapter);
+
+//        mReviewAdapter = new ReviewAdapter(getActivity(), mFilm.mReviews);
+//        mReviewsListView.setAdapter(mReviewAdapter);
+
+//        Utility.setDynamicHeight(mTrailersListView);
+//        Utility.setDynamicHeight(mReviewsListView);
+    }
+    private void showFilmDetails(){
         mTitleView.setText(mFilm.mTitle);
         mOverviewView.setText(mFilm.mOverview);
         mRatingView.setText(mFilm.mVotesAverage);
@@ -213,8 +283,8 @@ public class DetailActivityFragment extends Fragment
             Log.v("Release Year: ", "FAIL");
             e.printStackTrace();
         }
-
-        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+    private void showTrailers(LayoutInflater inflater){
         List trailers = mFilm.mTrailers;
         if (trailers != null && !trailers.isEmpty()){
             mFirstTrailer = createYoutubeUrl(((Trailer)trailers.get(0)).mSource).toString();
@@ -235,7 +305,9 @@ public class DetailActivityFragment extends Fragment
             }
             mShareActionProvider.setShareIntent(createShareTrailerIntent());
         }
+    }
 
+    private void showReviews(LayoutInflater inflater){
         List reviews = mFilm.mReviews;
         if (reviews != null && !reviews.isEmpty()){
             for(Review r : mFilm.mReviews ){
@@ -244,16 +316,6 @@ public class DetailActivityFragment extends Fragment
                 mReviewsView.addView(mReviewItemView);
             }
         }
-
-
-//        mTrailerAdapter = new TrailerAdapter(getActivity(),mFilm.mTrailers);
-//        mTrailersListView.setAdapter(mTrailerAdapter);
-
-//        mReviewAdapter = new ReviewAdapter(getActivity(), mFilm.mReviews);
-//        mReviewsListView.setAdapter(mReviewAdapter);
-
-//        Utility.setDynamicHeight(mTrailersListView);
-//        Utility.setDynamicHeight(mReviewsListView);
     }
     private Uri createYoutubeUrl(String trailerSource){
         final String YOUTUBE_BASE_URL = "http://www.youtube.com/watch";
