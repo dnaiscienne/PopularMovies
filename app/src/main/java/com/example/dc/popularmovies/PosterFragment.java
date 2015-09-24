@@ -311,5 +311,5 @@ public class PosterFragment extends Fragment{
 
         }
     }
-
+    //TODO: Define callback interface and implement in main activity
 }
