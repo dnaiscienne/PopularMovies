@@ -7,7 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements PosterFragment.Callback{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -60,5 +61,22 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(Bundle b) {
+        if(mTwoPane){
+            DetailActivityFragment fragment = new DetailActivityFragment();
+            fragment.setArguments(b);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.film_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        }else{
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .putExtra("bundle", b);
+            startActivity(intent);
+        }
+
     }
 }

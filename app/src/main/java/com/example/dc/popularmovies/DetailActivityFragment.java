@@ -40,6 +40,7 @@ public class DetailActivityFragment extends Fragment
         implements FetchDetailsTask.OnTaskCompleted{
 
     public static final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
+    static final String FILM_DETAIL = "DETAILS";
 
     private ShareActionProvider mShareActionProvider;
 
@@ -80,12 +81,17 @@ public class DetailActivityFragment extends Fragment
         mTrailersView = (LinearLayout) rootView.findViewById(R.id.film_trailer_list);
         mReviewsView = (LinearLayout) rootView.findViewById(R.id.film_review_list);
 
-
-        Intent intent = getActivity().getIntent();
-        if(intent != null && intent.hasExtra("bundle")) {
-            Bundle b = intent.getBundleExtra("bundle");
-            this.mFilm = b.getParcelable("film");
+        Bundle arguments = getArguments();
+        if(arguments != null){
+            Log.v("detail fragment arguments", "NOT NULL");
+            this.mFilm = arguments.getParcelable("film");
         }
+
+//        Intent intent = getActivity().getIntent();
+//        if(intent != null && intent.hasExtra("bundle")) {
+//            Bundle b = intent.getBundleExtra("bundle");
+//            this.mFilm = b.getParcelable("film");
+//        }
         if(mFilm != null){
             //Fetch additional details
             fetchFilmDetails(mFilm);
@@ -248,19 +254,21 @@ public class DetailActivityFragment extends Fragment
         return shareIntent;
     }
 
-    private void checkIfFavorite(){
-        Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
+    private void checkIfFavorite() {
+        if (mFilm != null) {
+            Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
 
-        //check if in favorites table
-        Cursor c = getActivity().getContentResolver().query(
-                filmUri,
-                null,
-                null,
-                null,
-                null
-        );
-        mIsFavorite = c.moveToFirst();
-        c.close();
+            //check if in favorites table
+            Cursor c = getActivity().getContentResolver().query(
+                    filmUri,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+            mIsFavorite = c.moveToFirst();
+            c.close();
+        }
     }
     private void insertIntoFavorites(){
         ContentValues filmValues = new ContentValues();

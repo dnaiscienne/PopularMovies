@@ -13,14 +13,12 @@ public class DetailActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         if (savedInstanceState == null) {
-            // Create the detail fragment and add it to the activity
-            // using a fragment transaction.
 
-            Bundle arguments = new Bundle();
-            arguments.putParcelable(DetailActivityFragment.DETAIL_URI, getIntent().getData());
+//            Bundle arguments = new Bundle();
+//            arguments.putParcelable(DetailActivityFragment.FILM_DETAIL, getIntent().getBundleExtra("bundle"));
 
             DetailActivityFragment fragment = new DetailActivityFragment();
-            fragment.setArguments(arguments);
+            fragment.setArguments(getIntent().getBundleExtra("bundle"));
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.film_detail_container, fragment)

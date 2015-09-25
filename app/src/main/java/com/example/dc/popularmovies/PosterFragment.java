@@ -1,6 +1,5 @@
 package com.example.dc.popularmovies;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -43,6 +42,11 @@ public class PosterFragment extends Fragment{
     private List<Film> mFilmList;
     private String mSortOrder;
     private String mRecentOrder;
+    private int mPosition;
+
+    private GridView mGridView;
+
+    private static final String SELECTED_KEY = "selected_position";
 
     private static final String[] FILM_COLUMNS = {
             FilmContract.FilmEntry._ID,
@@ -62,6 +66,9 @@ public class PosterFragment extends Fragment{
     static final int COL_FILM_RELEASE = 5;
     static final int COL_FILM_POSTER_PATH = 6;
 
+    public interface Callback {
+        public void onItemSelected(Bundle b);
+    }
 
     public PosterFragment() {
     }
@@ -134,6 +141,12 @@ public class PosterFragment extends Fragment{
         return true;
     }
 
+    private void preserveSelection(){
+        if (mPosition != GridView.INVALID_POSITION){
+            mGridView.smoothScrollToPosition(mPosition);
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -155,16 +168,19 @@ public class PosterFragment extends Fragment{
                 mFilmList);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_poster);
-        gridView.setAdapter(mPosterAdapter);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        mGridView = (GridView) rootView.findViewById(R.id.gridview_poster);
+        mGridView.setDrawSelectorOnTop(true);
+        mGridView.setAdapter(mPosterAdapter);
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Film film = mPosterAdapter.getItem(position);
                 Bundle b = new Bundle();
                 b.putParcelable("film", film);
-                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra("bundle", b);
-                startActivity(intent);
+                ((Callback) getActivity())
+                        .onItemSelected(b);
+                mPosition = position;
             }
         });
         return rootView;
@@ -174,6 +190,10 @@ public class PosterFragment extends Fragment{
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putParcelableArrayList("films",(ArrayList<? extends Parcelable>) mFilmList);
         savedInstanceState.putString("order", mSortOrder);
+        if(mPosition != GridView.INVALID_POSITION){
+            savedInstanceState.putInt(SELECTED_KEY, mPosition);
+        }
+
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -307,9 +327,9 @@ public class PosterFragment extends Fragment{
             if(filmList != null){
                 mPosterAdapter.clear();
                 mPosterAdapter.addAll(filmList);
+                preserveSelection();
             }
 
         }
     }
-    //TODO: Define callback interface and implement in main activity
 }
