@@ -58,15 +58,7 @@ public class DetailActivityFragment extends Fragment
     private LinearLayout mTrailersView;
     private LinearLayout mReviewsView;
 
-//    private TextView mTrailerItemView;
     private TextView mReviewItemView;
-
-//    private ListView mTrailersListView;
-//    private ListView mReviewsListView;
-
-//    private ListAdapter mTrailerAdapter;
-//    private ListAdapter mReviewAdapter;
-
 
     public DetailActivityFragment() {
         setHasOptionsMenu(true);
@@ -88,8 +80,6 @@ public class DetailActivityFragment extends Fragment
         mTrailersView = (LinearLayout) rootView.findViewById(R.id.film_trailer_list);
         mReviewsView = (LinearLayout) rootView.findViewById(R.id.film_review_list);
 
-//        mTrailersListView = (ListView) rootView.findViewById(R.id.film_trailer_list);
-//        mReviewsListView = (ListView) rootView.findViewById(R.id.film_review_list);
 
         Intent intent = getActivity().getIntent();
         if(intent != null && intent.hasExtra("bundle")) {
@@ -119,33 +109,6 @@ public class DetailActivityFragment extends Fragment
                         insertIntoFavorites();
                         mFavoriteButton.setText(R.string.favorite_unmark_button_label);
                     }
-
-//                    ContentValues filmValues = new ContentValues();
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_ID, mFilm.mFilmId);
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_FILM_TITLE, mFilm.mTitle);
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_OVERVIEW, mFilm.mOverview);
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_RATING, mFilm.mVotesAverage);
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_RELEASE, mFilm.mReleaseDate);
-//                    filmValues.put(FilmContract.FilmEntry.COLUMN_POSTER_PATH, mFilm.mImageUrl);
-//
-//                    Uri uri = getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
-//
-//                    Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
-//
-//                    //check if in favorite table
-//                    Cursor c = getActivity().getContentResolver().query(
-//                            filmUri,
-//                            null,
-//                            null,
-//                            null,
-//                            null
-//                    );
-//
-//                    if(c.moveToFirst()){
-//                        Toast.makeText(getActivity(), mFilm.mFilmId, Toast.LENGTH_SHORT).show();
-//                    }
-//
-//                    c.close();
 
                 }
             });
@@ -181,7 +144,6 @@ public class DetailActivityFragment extends Fragment
             Log.d(LOG_TAG, "Share Action Provider is null?");
         }
 
-//        mShareActionProvider.setShareIntent(createShareTrailerIntent());
     }
 
 
@@ -189,73 +151,9 @@ public class DetailActivityFragment extends Fragment
     public void onFetchDetailsTaskCompleted(Film film) {
         mFilm = film;
         showFilmDetails();
-//        mTitleView.setText(mFilm.mTitle);
-//        mOverviewView.setText(mFilm.mOverview);
-//        mRatingView.setText(mFilm.mVotesAverage);
-//
-//        Picasso.with(getActivity())
-//                .load(mFilm.mImageUrl)
-//                .placeholder(R.drawable.placeholder)
-//                .into(mPosterView);
-//
-//        Log.v("URL", mFilm.mImageUrl);
-//        Log.v("Release Date", mFilm.mReleaseDate);
-//
-//
-//
-//        try {
-//            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(mFilm.mReleaseDate);
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.setTime(date);
-//            int year = calendar.get(Calendar.YEAR);
-//            mReleaseView.setText(Integer.toString(year));
-//            Log.v("Release Year: ", Integer.toString(year));
-//        } catch (ParseException e) {
-//            Log.v("Release Year: ", "FAIL");
-//            e.printStackTrace();
-//        }
-
         LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         showTrailers(inflater);
-//        List trailers = mFilm.mTrailers;
-//        if (trailers != null && !trailers.isEmpty()){
-//            mFirstTrailer = createYoutubeUrl(((Trailer)trailers.get(0)).mSource).toString();
-//            for(final Trailer t : mFilm.mTrailers ){
-//                View trailerItemView = inflater.inflate(R.layout.list_item_trailer, null, false);
-////                mTrailerItemView = (TextView) inflater.inflate(R.layout.list_item_trailer, null, false);
-//                TextView trailerItemNameView = (TextView)trailerItemView.findViewById(R.id.list_item_trailer_name_textview);
-//                trailerItemNameView.setText(t.mName);
-//                final Uri youtubeUrl = createYoutubeUrl(t.mSource);
-//                trailerItemView.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-////                        Toast.makeText(getActivity(), t.mName, Toast.LENGTH_SHORT).show();
-//                        playTrailer(youtubeUrl);
-//                    }
-//                });
-//                mTrailersView.addView(trailerItemView);
-//            }
-//            mShareActionProvider.setShareIntent(createShareTrailerIntent());
-//        }
         showReviews(inflater);
-//        List reviews = mFilm.mReviews;
-//        if (reviews != null && !reviews.isEmpty()){
-//            for(Review r : mFilm.mReviews ){
-//                mReviewItemView = (TextView) inflater.inflate(R.layout.list_item_review, null, false);
-//                mReviewItemView.setText(r.mContent);
-//                mReviewsView.addView(mReviewItemView);
-//            }
-//        }
-
-
-//        mTrailerAdapter = new TrailerAdapter(getActivity(),mFilm.mTrailers);
-//        mTrailersListView.setAdapter(mTrailerAdapter);
-
-//        mReviewAdapter = new ReviewAdapter(getActivity(), mFilm.mReviews);
-//        mReviewsListView.setAdapter(mReviewAdapter);
-
-//        Utility.setDynamicHeight(mTrailersListView);
-//        Utility.setDynamicHeight(mReviewsListView);
     }
     private void showFilmDetails(){
         mTitleView.setText(mFilm.mTitle);

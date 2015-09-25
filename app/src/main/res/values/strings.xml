@@ -14,6 +14,7 @@
     <string name="favorite_unmark_button_label">Unmark as favorite</string>
 
     <string name="pref_sort_label">Sort by</string>
+    <string name="pref_sort_key">order</string>
     <string name="pref_sort_rating">vote_average.desc</string>
     <string name="pref_sort_popular">popularity.desc</string>
     <string name="pref_sort_label_rating">Highest Rating</string>
@@ -24,4 +25,7 @@
 
     <string name="no_network">No Network Connection Available</string>
     <string name="no_favorites">No Favorite Movies in Collection</string>
+
+    <string name="added_favorites">Added to favorites</string>
+    <string name="removed_favorites">Removed from favortites</string>
 </resources>
