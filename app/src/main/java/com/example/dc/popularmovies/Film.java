@@ -3,6 +3,7 @@ package com.example.dc.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +34,8 @@ public class Film implements Parcelable{
         p.writeString(mVotesAverage);
         p.writeString(mReleaseDate);
         p.writeString(mImageUrl);
+        p.writeList(mTrailers);
+        p.writeList(mReviews);
     }
 
     private Film(Parcel p){
@@ -42,6 +45,12 @@ public class Film implements Parcelable{
         mVotesAverage = p.readString();
         mReleaseDate = p.readString();
         mImageUrl = p.readString();
+        mTrailers = new ArrayList<Trailer>();
+        mReviews = new ArrayList<Review>();
+        p.readList(mTrailers, null);
+        p.readList(mReviews, null);
+
+
     }
 
     public static final Parcelable.Creator<Film> CREATOR

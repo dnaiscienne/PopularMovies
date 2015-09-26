@@ -119,7 +119,6 @@ public class FetchDetailsTask extends AsyncTask<Film, Void, Film> {
     private Film getFilmDetailFromJson(Film film, String filmJsonStr)
             throws  JSONException{
 
-        final String MDB_RUNTIME = "runtime";
         final String MDB_TRAILERS = "trailers";
         final String MDB_YOUTUBE = "youtube";
         final String MDB_TRAILER_NAME = "name";

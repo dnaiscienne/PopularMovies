@@ -1,12 +1,10 @@
 package com.example.dc.popularmovies;
 
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -82,8 +80,7 @@ public class PosterFragment extends Fragment{
             mRecentOrder = savedInstanceState.getString("order");
         }else{
             mFilmList = new ArrayList<Film>();
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            mRecentOrder = pref.getString("order", "popularity.desc");
+            mRecentOrder = Utility.getSortOrder(getActivity());
         }
 
     }
@@ -91,7 +88,6 @@ public class PosterFragment extends Fragment{
     private void loadFilms(){
         mFilmList.clear();
         boolean hasNetworkConnection = checkNetwork();
-        Log.v("loadFilms", mSortOrder + " " + getString(R.string.pref_sort_favorites));
         if(mSortOrder.equals(getString(R.string.pref_sort_favorites))){
             Cursor filmCursor = getActivity().getContentResolver().query(
                     FilmContract.FilmEntry.CONTENT_URI,
@@ -102,26 +98,22 @@ public class PosterFragment extends Fragment{
             );
 
             if(filmCursor != null){
-                Log.v("Cursor", filmCursor.toString());
                 List<Film> filmList = new ArrayList<Film>();
                 while (filmCursor.moveToNext()) {
 
-                    Log.v("Film", Boolean.toString(filmList.add(new Film(
-                                    filmCursor.getString(COL_FILM_IMDB_ID),
-                                    filmCursor.getString(COL_FILM_TITLE),
-                                    filmCursor.getString(COL_FILM_OVERVIEW),
-                                    filmCursor.getString(COL_FILM_RATING),
-                                    filmCursor.getString(COL_FILM_RELEASE),
-                                    filmCursor.getString(COL_FILM_POSTER_PATH)
-                            ))));
-                    Log.v("Filmlist Size while", Integer.toString(mFilmList.size()));
+                    filmList.add(new Film(
+                            filmCursor.getString(COL_FILM_IMDB_ID),
+                            filmCursor.getString(COL_FILM_TITLE),
+                            filmCursor.getString(COL_FILM_OVERVIEW),
+                            filmCursor.getString(COL_FILM_RATING),
+                            filmCursor.getString(COL_FILM_RELEASE),
+                            filmCursor.getString(COL_FILM_POSTER_PATH)
+                    ));
 
                 }
                 filmCursor.close();
                 mPosterAdapter.clear();
-                Log.v("Filmlist Size", Integer.toString(filmList.size()));
                 mPosterAdapter.addAll(filmList);
-                Log.v("PosterAdapter", mPosterAdapter.toString());
             }
             else{
                 Toast.makeText(getActivity(), getString(R.string.no_favorites), Toast.LENGTH_SHORT).show();
@@ -150,10 +142,7 @@ public class PosterFragment extends Fragment{
     @Override
     public void onStart() {
         super.onStart();
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mSortOrder = pref.getString("order", "popularity.desc");
-        Log.v("sort order", Boolean.toString(mSortOrder.equals(mRecentOrder)));
-        Log.v("sort order value - r-s", mRecentOrder + " " + mSortOrder);
+        mSortOrder = Utility.getSortOrder(getActivity());
         if(mFilmList.isEmpty() || !mSortOrder.equals(mRecentOrder)) {
             loadFilms();
             mRecentOrder = mSortOrder;

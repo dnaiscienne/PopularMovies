@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ShareCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
@@ -40,7 +39,6 @@ public class DetailActivityFragment extends Fragment
         implements FetchDetailsTask.OnTaskCompleted{
 
     public static final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
-    static final String FILM_DETAIL = "DETAILS";
 
     private ShareActionProvider mShareActionProvider;
 
@@ -56,10 +54,12 @@ public class DetailActivityFragment extends Fragment
     private ImageView mPosterView;
     private Button mFavoriteButton;
 
+    private TextView mTrailerLabelView;
+    private TextView mReviewLabelView;
+
     private LinearLayout mTrailersView;
     private LinearLayout mReviewsView;
 
-    private TextView mReviewItemView;
 
     public DetailActivityFragment() {
         setHasOptionsMenu(true);
@@ -78,20 +78,17 @@ public class DetailActivityFragment extends Fragment
         mPosterView = (ImageView) rootView.findViewById(R.id.film_poster_thumbnail);
         mFavoriteButton = (Button) rootView.findViewById(R.id.favorite_button);
 
+        mTrailerLabelView = (TextView) rootView.findViewById(R.id.trailer_label);
+        mReviewLabelView = (TextView) rootView.findViewById(R.id.review_label);
+
         mTrailersView = (LinearLayout) rootView.findViewById(R.id.film_trailer_list);
         mReviewsView = (LinearLayout) rootView.findViewById(R.id.film_review_list);
 
         Bundle arguments = getArguments();
         if(arguments != null){
-            Log.v("detail fragment arguments", "NOT NULL");
             this.mFilm = arguments.getParcelable("film");
         }
 
-//        Intent intent = getActivity().getIntent();
-//        if(intent != null && intent.hasExtra("bundle")) {
-//            Bundle b = intent.getBundleExtra("bundle");
-//            this.mFilm = b.getParcelable("film");
-//        }
         if(mFilm != null){
             //Fetch additional details
             fetchFilmDetails(mFilm);
@@ -105,17 +102,17 @@ public class DetailActivityFragment extends Fragment
             mFavoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity(), "Favorite", Toast.LENGTH_SHORT).show();
-
                     if(mIsFavorite){
                         removeFromFavorites();
+                        Toast.makeText(getActivity(), getString(R.string.removed_favorites), Toast.LENGTH_SHORT).show();
                         mFavoriteButton.setText(R.string.favorite_mark_button_label);
                     }
                     else{
                         insertIntoFavorites();
+                        Toast.makeText(getActivity(), getString(R.string.added_favorites), Toast.LENGTH_SHORT).show();
                         mFavoriteButton.setText(R.string.favorite_unmark_button_label);
                     }
-
+                    checkIfFavorite();
                 }
             });
         }
@@ -142,12 +139,9 @@ public class DetailActivityFragment extends Fragment
         inflater.inflate(R.menu.menu_detailfragment, menu);
         MenuItem menuItem = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-        Intent shareIntent = ShareCompat.IntentBuilder.from(getActivity())
-                .setType("text/plain").setText("hi").getIntent();
-        if (mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(shareIntent);
-        } else {
-            Log.d(LOG_TAG, "Share Action Provider is null?");
+        if(mFirstTrailer != null){
+            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+
         }
 
     }
@@ -191,33 +185,38 @@ public class DetailActivityFragment extends Fragment
     private void showTrailers(LayoutInflater inflater){
         List trailers = mFilm.mTrailers;
         if (trailers != null && !trailers.isEmpty()){
+            mTrailerLabelView.setText(getString(R.string.detail_trailer_label));
             mFirstTrailer = createYoutubeUrl(((Trailer)trailers.get(0)).mSource).toString();
             for(final Trailer t : mFilm.mTrailers ){
                 View trailerItemView = inflater.inflate(R.layout.list_item_trailer, null, false);
-//                mTrailerItemView = (TextView) inflater.inflate(R.layout.list_item_trailer, null, false);
                 TextView trailerItemNameView = (TextView)trailerItemView.findViewById(R.id.list_item_trailer_name_textview);
                 trailerItemNameView.setText(t.mName);
                 final Uri youtubeUrl = createYoutubeUrl(t.mSource);
                 trailerItemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        Toast.makeText(getActivity(), t.mName, Toast.LENGTH_SHORT).show();
                         playTrailer(youtubeUrl);
                     }
                 });
                 mTrailersView.addView(trailerItemView);
             }
-            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+            if(mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareTrailerIntent());
+            }
         }
     }
 
     private void showReviews(LayoutInflater inflater){
         List reviews = mFilm.mReviews;
         if (reviews != null && !reviews.isEmpty()){
+            mReviewLabelView.setText(getString(R.string.detail_review_label));
             for(Review r : mFilm.mReviews ){
-                mReviewItemView = (TextView) inflater.inflate(R.layout.list_item_review, null, false);
-                mReviewItemView.setText(r.mContent);
-                mReviewsView.addView(mReviewItemView);
+                View reviewItemView = inflater.inflate(R.layout.list_item_review, null, false);
+                TextView reviewItemContentView = (TextView)reviewItemView.findViewById(R.id.list_item_review_content_textview);
+                TextView reviewItemAuthorView = (TextView)reviewItemView.findViewById(R.id.list_item_review_author_textview);
+                reviewItemContentView.setText(r.mContent);
+                reviewItemAuthorView.setText(r.mAuthor);
+                mReviewsView.addView(reviewItemView);
             }
         }
     }
@@ -238,10 +237,17 @@ public class DetailActivityFragment extends Fragment
         }
     }
     private void fetchFilmDetails(Film film){
-        if(Utility.isNetworkAvailable(getActivity())){
+        if((mFilm.mTrailers != null && !mFilm.mTrailers.isEmpty()) || (mFilm.mReviews != null && !mFilm.mReviews.isEmpty())){
+            LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            showFilmDetails();
+            showTrailers(inflater);
+            showReviews(inflater);
+        }
+        else if(Utility.isNetworkAvailable(getActivity())){
             FetchDetailsTask fetchDetailsTask = new FetchDetailsTask(this);
             fetchDetailsTask.execute(film);
         }else{
+            showFilmDetails();
             Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_SHORT).show();
         }
     }
@@ -257,8 +263,6 @@ public class DetailActivityFragment extends Fragment
     private void checkIfFavorite() {
         if (mFilm != null) {
             Uri filmUri = FilmContract.FilmEntry.buildFilmIdUri(Integer.parseInt(mFilm.mFilmId));
-
-            //check if in favorites table
             Cursor c = getActivity().getContentResolver().query(
                     filmUri,
                     null,
@@ -282,10 +286,9 @@ public class DetailActivityFragment extends Fragment
         getActivity().getContentResolver().insert(FilmContract.FilmEntry.CONTENT_URI, filmValues);
     }
     private void removeFromFavorites(){
-        int rowsDeleted = 0;
         String selectionClause = FilmContract.FilmEntry.COLUMN_FILM_ID + " = ?";
         String[] selectionArgs = {mFilm.mFilmId};
-        rowsDeleted = getActivity().getContentResolver().delete(
+        getActivity().getContentResolver().delete(
                 FilmContract.FilmEntry.CONTENT_URI,
                 selectionClause,
                 selectionArgs
