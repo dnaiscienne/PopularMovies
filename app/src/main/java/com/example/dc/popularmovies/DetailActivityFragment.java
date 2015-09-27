@@ -1,5 +1,6 @@
 package com.example.dc.popularmovies;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -60,6 +61,8 @@ public class DetailActivityFragment extends Fragment
     private LinearLayout mReviewsView;
 
     private LayoutInflater mInflater;
+
+    private boolean mDisplayed = false;
 
 
 
@@ -156,9 +159,12 @@ public class DetailActivityFragment extends Fragment
         mFilm = film;
         showFilmDetails();
 //        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        showTrailers(mInflater);
-        showReviews(mInflater);
+        if(isAdded() && !mDisplayed){
+            mDisplayed = true;
+            showTrailers(mInflater);
+            showReviews(mInflater);
 
+        }
     }
     private void showFilmDetails(){
         mTitleView.setText(mFilm.mTitle);
@@ -245,8 +251,11 @@ public class DetailActivityFragment extends Fragment
         if((mFilm.mTrailers != null && !mFilm.mTrailers.isEmpty()) || (mFilm.mReviews != null && !mFilm.mReviews.isEmpty())){
 //            LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             showFilmDetails();
-            showTrailers(mInflater);
-            showReviews(mInflater);
+            if(isAdded() && !mDisplayed){
+                mDisplayed = true;
+                showTrailers(mInflater);
+                showReviews(mInflater);
+            }
         }
         else if(Utility.isNetworkAvailable(getActivity())){
             FetchDetailsTask fetchDetailsTask = new FetchDetailsTask(this);
@@ -298,5 +307,15 @@ public class DetailActivityFragment extends Fragment
                 selectionClause,
                 selectionArgs
         );
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if(!mDisplayed && (mFilm != null)){
+            mDisplayed = true;
+            showTrailers(mInflater);
+            showReviews(mInflater);
+        }
     }
 }
