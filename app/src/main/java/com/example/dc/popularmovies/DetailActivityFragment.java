@@ -1,7 +1,6 @@
 package com.example.dc.popularmovies;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -60,6 +59,9 @@ public class DetailActivityFragment extends Fragment
     private LinearLayout mTrailersView;
     private LinearLayout mReviewsView;
 
+    private LayoutInflater mInflater;
+
+
 
     public DetailActivityFragment() {
         setHasOptionsMenu(true);
@@ -83,6 +85,8 @@ public class DetailActivityFragment extends Fragment
 
         mTrailersView = (LinearLayout) rootView.findViewById(R.id.film_trailer_list);
         mReviewsView = (LinearLayout) rootView.findViewById(R.id.film_review_list);
+
+        mInflater = inflater;
 
         Bundle arguments = getArguments();
         if(arguments != null){
@@ -151,9 +155,10 @@ public class DetailActivityFragment extends Fragment
     public void onFetchDetailsTaskCompleted(Film film) {
         mFilm = film;
         showFilmDetails();
-        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        showTrailers(inflater);
-        showReviews(inflater);
+//        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        showTrailers(mInflater);
+        showReviews(mInflater);
+
     }
     private void showFilmDetails(){
         mTitleView.setText(mFilm.mTitle);
@@ -238,10 +243,10 @@ public class DetailActivityFragment extends Fragment
     }
     private void fetchFilmDetails(Film film){
         if((mFilm.mTrailers != null && !mFilm.mTrailers.isEmpty()) || (mFilm.mReviews != null && !mFilm.mReviews.isEmpty())){
-            LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             showFilmDetails();
-            showTrailers(inflater);
-            showReviews(inflater);
+            showTrailers(mInflater);
+            showReviews(mInflater);
         }
         else if(Utility.isNetworkAvailable(getActivity())){
             FetchDetailsTask fetchDetailsTask = new FetchDetailsTask(this);
